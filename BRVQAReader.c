@@ -935,7 +935,7 @@ BRVQAReaderRef BRVQAReaderOpen(BRPtrRangeRef r)
 	//cleanup_if_not(size > ...);
 
 	uint32_t sig = BRPtrRangeReadBE32AndAdvance(r);
-	cleanup_if_not(sig = kWVQA);
+	cleanup_if_not(sig == kWVQA);
 
 	tag = readTag(r);
 	cleanup_if_not(tag == kVQHD);
