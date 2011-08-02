@@ -27,6 +27,18 @@ BRPtrRangeRef BRPtrRangeCreate(uint8_t *begin, uint8_t *end)
 	return r;
 }
 
+BRPtrRangeRef BRPtrRangeCreateCopy(BRPtrRangeRef aPtrRange)
+{
+	BRPtrRangeRef r = calloc(1, sizeof(struct BRPtrRange));
+	if (!r)
+		return 0;
+
+	r->orig_p = aPtrRange->orig_p;
+	r->p      = aPtrRange->p;
+	r->end    = aPtrRange->end;
+
+	return r;
+}
 
 uint8_t *BRPtrRangeGetBegin(BRPtrRangeRef r)
 {

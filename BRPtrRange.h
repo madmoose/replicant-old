@@ -7,6 +7,7 @@
 typedef struct BRPtrRange * BRPtrRangeRef;
 
 BRPtrRangeRef BRPtrRangeCreate(uint8_t *begin, uint8_t *end);
+BRPtrRangeRef BRPtrRangeCreateCopy(BRPtrRangeRef aPtrRange);
 
 uint8_t *BRPtrRangeGetBegin(BRPtrRangeRef r);
 uint8_t *BRPtrRangeGetEnd(BRPtrRangeRef r);
