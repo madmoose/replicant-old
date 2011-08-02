@@ -155,7 +155,6 @@ int main(int argc, char const *argv[])
 			hexdump(BRPtrRangeGetBegin(r), MIN(BRPtrRangeGetDistance(r), 16));
 		}
 		free(r);
-		break;
 	}
 
 cleanup:
