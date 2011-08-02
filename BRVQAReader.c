@@ -1,19 +1,12 @@
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include "BRVQAReader.h"
 
 #include "BRCommon.h"
 #include "BRUtils.h"
 
-#include "LodePNG.h"
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 
 #ifndef _WIN32
 #include <execinfo.h>
@@ -112,6 +105,8 @@ const char *str_tag(uint32_t tag)
 
 struct BRVQAReader
 {
+	BRPtrRangeRef vqaRange;
+
 	struct {
 		uint16_t version;
 		uint16_t flags;
@@ -144,7 +139,7 @@ struct BRVQAReader
 	uint32_t _maxVIEWSize;
 	uint32_t _maxZBUFSize;
 
-	uint16_t *_frameInfo;
+	uint32_t *_frameInfo;
 
 	struct {
 		uint16_t frameBegin;
@@ -181,19 +176,34 @@ BOOL _BRVQAReaderReadVQHD(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	aVQAReader->_header.maxCBFZSize  = BRPtrRangeReadLE32AndAdvance(r);
 	aVQAReader->_header.unk5         = BRPtrRangeReadLE32AndAdvance(r);
 
-	printf("Version: %04x\nFlags: %04x\n",
+	printf("Version: %04x\nFlags:   %04x\n",
 		aVQAReader->_header.version,
 		aVQAReader->_header.flags);
 
-	printf("Frames:     %d (0x%x)\n",
+	printf("Frames:  %4d (0x%x)\n",
 		aVQAReader->_header.numFrames,
 		aVQAReader->_header.numFrames);
 
-	printf("Size: %dx%d\n",
+	printf("Size:    %3dx%d\n",
 		aVQAReader->_header.width,
 		aVQAReader->_header.height);
 
 	return YES;
+}
+
+uint16_t BRVQAReaderGetFrameCount(BRVQAReaderRef aVQAReader)
+{
+	assert(aVQAReader);
+	return aVQAReader->_header.numFrames;
+}
+
+BRSize BRVQAReaderGetFrameSize(BRVQAReaderRef aVQAReader)
+{
+	assert(aVQAReader);
+
+	BRSize size = { aVQAReader->_header.width, aVQAReader->_header.height };
+
+	return size;
 }
 
 #define DUMP do { hexdump(BRPtrRangeGetBegin(r)-8, size+8); } while (0)
@@ -208,6 +218,8 @@ BOOL _BRVQAReaderReadCLIP(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 
 	uint32_t width =  BRPtrRangeReadLE32AndAdvance(r);
 	uint32_t height = BRPtrRangeReadLE32AndAdvance(r);
+
+	printf("CLIP: %d x %d\n", width, height);
 
 	UNUSED(width);
 	UNUSED(height);
@@ -388,7 +400,7 @@ BOOL _BRVQAReaderReadFINF(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	uint32_t size = BRPtrRangeGetDistance(r);
 	cleanup_if(size != 4 * numFrames);
 
-	aVQAReader->_frameInfo = calloc(numFrames, sizeof(uint16_t));
+	aVQAReader->_frameInfo = calloc(numFrames, sizeof(uint32_t));
 
 	unsigned int i;
 	for (i = 0; i != numFrames; ++i)
@@ -710,6 +722,7 @@ BOOL _BRVQAReaderReadVQFR(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	while (BRPtrRangeGetDistance(r) >= 8)
 	{
 		uint32_t tag = readTag(r);
+		printf("\tTag: %s\n", str_tag(tag));
 		uint32_t size = BRPtrRangeReadBE32AndAdvance(r);
 
 		cleanup_if(size > BRPtrRangeGetDistance(r));
@@ -750,6 +763,8 @@ BOOL _BRVQAReaderReadVQFL(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	while (BRPtrRangeGetDistance(r) >= 8)
 	{
 		uint32_t tag = readTag(r);
+		printf("\tTag: %s\n", str_tag(tag));
+
 		uint32_t size = BRPtrRangeReadBE32AndAdvance(r);
 
 		cleanup_if(size > BRPtrRangeGetDistance(r));
@@ -832,11 +847,80 @@ BOOL _BRVQAReaderReadLITE(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	return YES;
 }
 
+BOOL BRVQAReaderReadFrame(BRVQAReaderRef aVQAReader, unsigned int aFrameNumber)
+{
+	cleanup_if_not(aVQAReader);
+
+	BRPtrRangeRef r = BRPtrRangeCreateCopy(aVQAReader->vqaRange);
+	cleanup_if_not(r);
+
+	BRPtrRangeAdvance(r, 2 * (aVQAReader->_frameInfo[aFrameNumber] & 0x1fffffff));
+
+	uint32_t tag;
+	do {
+		tag = readTag(r);
+		printf("Tag: %s\n", str_tag(tag));
+
+		cleanup_if(BRPtrRangeGetDistance(r) < 4);
+		uint32_t size = BRPtrRangeReadBE32AndAdvance(r);
+
+		cleanup_if(BRPtrRangeGetDistance(r) < size);
+		LIMIT_SIZE(r, size);
+
+		BOOL rc = NO;
+		switch (tag)
+		{
+			case kVQFL:
+				rc = _BRVQAReaderReadVQFL(aVQAReader, r);
+				break;
+			case kVQFR:
+				rc = _BRVQAReaderReadVQFR(aVQAReader, r);
+				break;
+			case kVIEW:
+				rc = _BRVQAReaderReadVIEW(aVQAReader, r);
+				break;
+			case kZBUF:
+				rc = _BRVQAReaderReadZBUF(aVQAReader, r);
+				break;
+			case kAESC:
+				rc = _BRVQAReaderReadAESC(aVQAReader, r);
+				break;
+			case kLITE:
+				rc = _BRVQAReaderReadLITE(aVQAReader, r);
+				break;
+			case kSN2J:
+			case kSND2:
+				// Skip for now
+				BRPtrRangeAdvance(r, size);
+				rc = YES;
+				break;
+			default:
+				puts("Unknown or unexpected tag:");
+				hexdump(BRPtrRangeGetBegin(r) - 8, 16);
+				BRPtrRangeAdvance(r, size);
+		}
+
+		UNDO_LIMIT_SIZE(r);
+		cleanup_if_not(rc);
+	} while (tag != kVQFR);
+
+	return YES;
+cleanup:
+	return NO;
+}
+
+uint8_t *BRVQAReaderGetFrame(BRVQAReaderRef aVQAReader)
+{
+	return (uint8_t*)aVQAReader->_frame;
+}
+
+
 BRVQAReaderRef BRVQAReaderOpen(BRPtrRangeRef r)
 {
-	static int nFile = 0;
-	nFile++;
 	BRVQAReaderRef VQAReader = calloc(1, sizeof(struct BRVQAReader));
+	cleanup_if_not(VQAReader);
+
+	VQAReader->vqaRange = BRPtrRangeCreateCopy(r);
 
 	uint32_t size;
 	uint32_t tag;
@@ -869,20 +953,16 @@ BRVQAReaderRef BRVQAReaderOpen(BRPtrRangeRef r)
 	VQAReader->_frame     = malloc(4 * VQAReader->_header.width *
 	                                   VQAReader->_header.height);
 
-	// Clear the background to a pleasent turquoise.
-	int m;
-	for (m = 0; m != VQAReader->_header.width * VQAReader->_header.height; ++m)
-		VQAReader->_frame[m] = 0xffffff00;
-
 	cleanup_if_not(VQAReader->_codeBook);
 	cleanup_if_not(VQAReader->_frame);
 
-	int frameNumber = 0;
-	while (BRPtrRangeGetDistance(r) >= 8 && (tag = readTag(r)))
-	{
-		//printf("Tag: %s\n", str_tag(tag));
+	do {
+		tag = readTag(r);
+		printf("Tag: %s\n", str_tag(tag));
+
 		cleanup_if(BRPtrRangeGetDistance(r) < 4);
 		uint32_t size = BRPtrRangeReadBE32AndAdvance(r);
+
 		cleanup_if(BRPtrRangeGetDistance(r) < size);
 		LIMIT_SIZE(r, size);
 
@@ -910,67 +990,15 @@ BRVQAReaderRef BRVQAReaderOpen(BRPtrRangeRef r)
 			case kFINF:
 				rc = _BRVQAReaderReadFINF(VQAReader, r);
 				break;
-			case kVQFL:
-				rc = _BRVQAReaderReadVQFL(VQAReader, r);
-				break;
-			case kVQFR:
-				rc = _BRVQAReaderReadVQFR(VQAReader, r);
-				if (rc)
-				{
-					uint8_t *buffer = 0;
-					size_t   buffer_size = 0;
-					LodePNG_encode32(&buffer, &buffer_size,
-					                 (uint8_t*)VQAReader->_frame,
-					                 VQAReader->_header.width,
-					                 VQAReader->_header.height);
-
-					char filename[128];
-
-					/* The VQA-number doesn't correspond with the MIX resource number.
-					 * It probably should... For now they're just numbered sequentially
-					 */
-#ifdef _WIN32
-					sprintf(filename, "vqa_%03d", nFile);
-					if (frameNumber == 0)
-						CreateDirectory(filename, 0);
-					sprintf(filename, "vqa_%03d\\frame_%03d.png", nFile, ++frameNumber);
-#else
-					sprintf(filename, "vqa_%03d", nFile);
-					if (frameNumber == 0)
-						mkdir(filename, 0700);
-					sprintf(filename, "vqa_%03d/frame_%03d.png", nFile, ++frameNumber);
-#endif
-					puts(filename);
-					LodePNG_saveFile(buffer, buffer_size, filename);
-					free(buffer);
-				}
-				break;
-			case kVIEW:
-				rc = _BRVQAReaderReadVIEW(VQAReader, r);
-				break;
-			case kZBUF:
-				rc = _BRVQAReaderReadZBUF(VQAReader, r);
-				break;
-			case kAESC:
-				rc = _BRVQAReaderReadAESC(VQAReader, r);
-				break;
-			case kLITE:
-				rc = _BRVQAReaderReadLITE(VQAReader, r);
-				break;
-			case kSN2J:
-			case kSND2:
-				BRPtrRangeAdvance(r, size);
-				rc = YES;
-				break;
 			default:
-				puts("Unknown tag:");
+				puts("Unknown or unexpected tag:");
 				hexdump(BRPtrRangeGetBegin(r) - 8, 16);
 				BRPtrRangeAdvance(r, size);
 		}
 
 		UNDO_LIMIT_SIZE(r);
 		cleanup_if_not(rc);
-	}
+	} while (tag != kFINF);
 
 	return VQAReader;
 
