@@ -301,12 +301,6 @@ BOOL _BRVQAReaderReadLNIN(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 
 	BRPtrRangeAdvance(r, loopUnk3);
 
-	for (i = 0; i != loopNamesCount; ++i)
-		printf("Loop %2d: %04x - %04x  %s\n", i,
-			aVQAReader->_loopInfo[i].frameBegin,
-			aVQAReader->_loopInfo[i].frameEnd,
-			aVQAReader->_loopInfo[i].name);
-
 	rc = YES;
 cleanup:
 	free(loopNameOffsets);
@@ -999,6 +993,15 @@ BRVQAReaderRef BRVQAReaderOpen(BRPtrRangeRef r)
 		UNDO_LIMIT_SIZE(r);
 		cleanup_if_not(rc);
 	} while (tag != kFINF);
+
+	int i;
+	for (i = 0; i != VQAReader->_loopCount; ++i)
+	{
+		printf("\tLoop %2d: %04x - %04x  %s\n", i,
+			VQAReader->_loopInfo[i].frameBegin,
+			VQAReader->_loopInfo[i].frameEnd,
+			VQAReader->_loopInfo[i].name ? VQAReader->_loopInfo[i].name : "");
+	}
 
 	return VQAReader;
 
