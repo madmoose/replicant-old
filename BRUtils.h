@@ -5,4 +5,9 @@
 
 void hexdump(void *data, size_t size);
 
+typedef struct {
+	unsigned int width;
+	unsigned int height;
+} BRSize;
+
 #endif
