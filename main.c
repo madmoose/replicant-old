@@ -79,13 +79,56 @@ void DumpSet0(BRPtrRangeRef r)
 }
 */
 
+void readVQA(BRPtrRangeRef r, int resourceNumber)
+{
+	BRVQAReaderRef vqa = BRVQAReaderOpen(r);
+	putchar('\n');
+
+	int frameNumber;
+	int frameCount   = BRVQAReaderGetFrameCount(vqa);
+	BRSize frameSize = BRVQAReaderGetFrameSize(vqa);
+
+	for (frameNumber = 0; frameNumber != frameCount; ++frameNumber)
+	{
+		BOOL rc = BRVQAReaderReadFrame(vqa, frameNumber);
+		continue;
+		if (!rc)
+			break;
+
+		uint8_t *buffer = 0;
+		size_t   buffer_size = 0;
+		LodePNG_encode32(&buffer, &buffer_size,
+		                 BRVQAReaderGetFrame(vqa),
+		                 frameSize.width,
+		                 frameSize.height);
+
+		char filename[128];
+
+#ifdef _WIN32
+		sprintf(filename, "vqa_%03d", resourceNumber);
+		if (frameNumber == 0)
+			CreateDirectory(filename, 0);
+		sprintf(filename, "vqa_%03d\\frame_%03d.png", resourceNumber, frameNumber);
+#else
+		sprintf(filename, "vqa_%03d", resourceNumber);
+		if (frameNumber == 0)
+			mkdir(filename, 0700);
+		sprintf(filename, "vqa_%03d/frame_%03d.png", resourceNumber, frameNumber);
+#endif
+		puts(filename);
+		LodePNG_saveFile(buffer, buffer_size, filename);
+		free(buffer);
+	}
+
+	BRVQAReaderClose(vqa);
+}
+
 int main(int argc, char const *argv[])
 {
 	if (argc < 2)
 		return 0;
 
 	const char *mixFilename = argv[1];
-
 
 	BRMixFileRef mixFile = BRMixFileOpen(mixFilename);
 
@@ -114,45 +157,7 @@ int main(int argc, char const *argv[])
 
 		if (tag == kFORM)
 		{
-			BRVQAReaderRef vqa = BRVQAReaderOpen(r);
-			putchar('\n');
-
-			int frameNumber;
-			int frameCount   = BRVQAReaderGetFrameCount(vqa);
-			BRSize frameSize = BRVQAReaderGetFrameSize(vqa);
-
-			for (frameNumber = 0; frameNumber != frameCount; ++frameNumber)
-			{
-				BOOL rc = BRVQAReaderReadFrame(vqa, frameNumber);
-				if (!rc)
-					break;
-
-				uint8_t *buffer = 0;
-				size_t   buffer_size = 0;
-				LodePNG_encode32(&buffer, &buffer_size,
-				                 BRVQAReaderGetFrame(vqa),
-				                 frameSize.width,
-				                 frameSize.height);
-
-				char filename[128];
-
-#ifdef _WIN32
-				sprintf(filename, "vqa_%03d", i);
-				if (frameNumber == 1)
-					CreateDirectory(filename, 0);
-				sprintf(filename, "vqa_%03d\\frame_%03d.png", i, frameNumber);
-#else
-				sprintf(filename, "vqa_%03d", i);
-				if (frameNumber == 1)
-					mkdir(filename, 0700);
-				sprintf(filename, "vqa_%03d/frame_%03d.png", i, frameNumber);
-#endif
-				puts(filename);
-				LodePNG_saveFile(buffer, buffer_size, filename);
-				free(buffer);
-			}
-
-			BRVQAReaderClose(vqa);
+			readVQA(r, i);
 		}
 		/*
 		else if (tag == kSet0)
