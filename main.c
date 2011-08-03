@@ -5,6 +5,7 @@
 #include "BRCommon.h"
 #include "BRUtils.h"
 #include "BRMixFile.h"
+#include "BRNumberListIterator.h"
 #include "BRVQAReader.h"
 
 #include <stdio.h>
@@ -80,10 +81,11 @@ void DumpSet0(BRPtrRangeRef r)
 
 int main(int argc, char const *argv[])
 {
-	if (argc != 2)
+	if (argc < 2)
 		return 0;
 
 	const char *mixFilename = argv[1];
+
 
 	BRMixFileRef mixFile = BRMixFileOpen(mixFilename);
 
@@ -93,9 +95,18 @@ int main(int argc, char const *argv[])
 		goto cleanup;
 	}
 
-	int i, end = BRMixFileGetResourceCount(mixFile);
-	for (i = 0; i != end; ++i)
+	BRNumberListIteratorRef nli;
+	if (argc > 2)
+		nli = BRNumberListIteratorCreateWithString(argv[2]);
+	else
+		nli = BRNumberListIteratorCreate(0, BRMixFileGetResourceCount(mixFile) - 1);
+
+	int i;
+	while ((i = BRNumberListIteratorGetNext(nli)) != -1)
 	{
+		if (i >= BRMixFileGetResourceCount(mixFile))
+			continue;
+
 		printf("\nResource %d\n", i);
 		BRPtrRangeRef r = BRMixFileGetResourceRangeByIndex(mixFile, i);
 
