@@ -1,3 +1,5 @@
+#include "BRUtils.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -35,4 +37,15 @@ void hexdump(void *data, size_t size)
 		p += c;
 	} while (p != end);
 	//putchar('\n');
+}
+
+BRSize BRSizeMake(unsigned int width, unsigned int height)
+{
+	BRSize s = { width, height };
+	return s;
+}
+
+BOOL BRSizeIsEmpty(BRSize s)
+{
+	return s.width == 0 && s.height == 0;
 }
