@@ -147,6 +147,8 @@ struct BRVQAReader
 		char    *name;
 	} *_loopInfo;
 	uint16_t _loopCount;
+
+	BRSize _clipSize;
 };
 
 BOOL _BRVQAReaderReadVQHD(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
@@ -219,10 +221,10 @@ BOOL _BRVQAReaderReadCLIP(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	uint32_t width =  BRPtrRangeReadLE32AndAdvance(r);
 	uint32_t height = BRPtrRangeReadLE32AndAdvance(r);
 
-	printf("CLIP: %d x %d\n", width, height);
+	aVQAReader->_clipSize = BRSizeMake(width, height);
 
-	UNUSED(width);
-	UNUSED(height);
+	printf("CLIP: %d x %d\n", aVQAReader->_clipSize.width,
+	                          aVQAReader->_clipSize.height);
 
 	return YES;
 }
@@ -347,8 +349,6 @@ BOOL _BRVQAReaderReadCINF(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 {
 	UNUSED(aVQAReader);
 
-	//uint32_t size = BRPtrRangeGetDistance(r);
-
 	cleanup_if_not(readTag(r) == kCINH);
 	cleanup_if_not(BRPtrRangeReadBE32AndAdvance(r) == 8);
 
@@ -365,14 +365,12 @@ BOOL _BRVQAReaderReadCINF(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	int i;
 	for (i = 0; i != clipCount; ++i)
 	{
-		/*
-		printf("Clip %d:\n", i);
-		hexdump(BRPtrRangeGetBegin(r), 6);
-		printf("%d ", BRPtrRangeReadLE16AndAdvance(r));
-		printf("%d ", BRPtrRangeReadLE16AndAdvance(r));
-		printf("%d\n", BRPtrRangeReadLE16AndAdvance(r));
-		*/
-		BRPtrRangeAdvance(r, 6);
+		printf("\nClip %d: ", i);
+		printf("%5x ", BRPtrRangeReadLE16AndAdvance(r));
+		printf("%8d ", BRPtrRangeReadLE32AndAdvance(r));
+		putchar('\n');
+		hexdump(BRPtrRangeGetBegin(r) - 6, 6);
+		//BRPtrRangeAdvance(r, 6);
 	}
 
 	//BRPtrRangeAdvance(r, 6 * clipCount);
@@ -843,12 +841,22 @@ BOOL _BRVQAReaderReadLITE(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 
 BOOL BRVQAReaderReadFrame(BRVQAReaderRef aVQAReader, unsigned int aFrameNumber)
 {
+	BOOL rc = NO;
+	BRPtrRangeRef r = 0;
+
 	cleanup_if_not(aVQAReader);
 
-	BRPtrRangeRef r = BRPtrRangeCreateCopy(aVQAReader->vqaRange);
+	r = BRPtrRangeCreateCopy(aVQAReader->vqaRange);
 	cleanup_if_not(r);
 
 	BRPtrRangeAdvance(r, 2 * (aVQAReader->_frameInfo[aFrameNumber] & 0x1fffffff));
+
+	if (!BRSizeIsEmpty(aVQAReader->_clipSize))
+	{
+		int i;
+		for (i = 0; i != aVQAReader->_header.width * aVQAReader->_header.height; ++i)
+			aVQAReader->_frame[i] = 0xffffff00;
+	}
 
 	uint32_t tag;
 	do {
@@ -861,7 +869,6 @@ BOOL BRVQAReaderReadFrame(BRVQAReaderRef aVQAReader, unsigned int aFrameNumber)
 		cleanup_if(BRPtrRangeGetDistance(r) < size);
 		LIMIT_SIZE(r, size);
 
-		BOOL rc = NO;
 		switch (tag)
 		{
 			case kVQFL:
@@ -898,8 +905,10 @@ BOOL BRVQAReaderReadFrame(BRVQAReaderRef aVQAReader, unsigned int aFrameNumber)
 		cleanup_if_not(rc);
 	} while (tag != kVQFR);
 
+	free(r);
 	return YES;
 cleanup:
+	free(r);
 	return NO;
 }
 
