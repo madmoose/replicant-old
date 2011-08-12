@@ -13,6 +13,12 @@ struct BRPtrRange
 	uint8_t *end;
 };
 
+void BRPtrRange_dummy()
+{
+	static char FloatIs4BytesTest[sizeof(float) == 4 ? 1 : -1];
+	(void)FloatIs4BytesTest;
+}
+
 BRPtrRangeRef BRPtrRangeCreate(uint8_t *begin, uint8_t *end)
 {
 	assert(begin <= end);
@@ -121,6 +127,14 @@ uint32_t BRPtrRangeReadBE32(BRPtrRangeRef r)
 	return betoh32(a);
 }
 
+float BRPtrRangeReadLEFloat(BRPtrRangeRef r)
+{
+	uint32_t i = BRPtrRangeReadLE32(r);
+	float f;
+	memcpy(&f, &i, 4);
+	return f;
+}
+
 uint8_t BRPtrRangeReadByteAndAdvance(BRPtrRangeRef r)
 {
 	assert(r->end - r->p >= 1);
@@ -165,4 +179,12 @@ uint32_t BRPtrRangeReadBE32AndAdvance(BRPtrRangeRef r)
 	memcpy(&a, r->p, 4);
 	r->p += 4;
 	return betoh32(a);
+}
+
+float BRPtrRangeReadLEFloatAndAdvance(BRPtrRangeRef r)
+{
+	uint32_t i = BRPtrRangeReadLE32AndAdvance(r);
+	float f;
+	memcpy(&f, &i, 4);
+	return f;
 }

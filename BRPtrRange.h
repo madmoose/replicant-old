@@ -25,10 +25,14 @@ uint16_t BRPtrRangeReadBE16(BRPtrRangeRef r);
 uint32_t BRPtrRangeReadLE32(BRPtrRangeRef r);
 uint32_t BRPtrRangeReadBE32(BRPtrRangeRef r);
 
+float    BRPtrRangeReadLEFloat(BRPtrRangeRef r);
+
 uint8_t  BRPtrRangeReadByteAndAdvance(BRPtrRangeRef r);
 uint16_t BRPtrRangeReadLE16AndAdvance(BRPtrRangeRef r);
 uint16_t BRPtrRangeReadBE16AndAdvance(BRPtrRangeRef r);
 uint32_t BRPtrRangeReadLE32AndAdvance(BRPtrRangeRef r);
 uint32_t BRPtrRangeReadBE32AndAdvance(BRPtrRangeRef r);
+
+float    BRPtrRangeReadLEFloatAndAdvance(BRPtrRangeRef r);
 
 #endif
