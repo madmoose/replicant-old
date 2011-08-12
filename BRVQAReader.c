@@ -59,10 +59,6 @@ void dump_stacktrace()
 #endif
 }
 
-#define cleanup_if(x) do { if (x) { printf("%s %s:%d:\tcleanup_if failed: " #x "\n", __FILE__, __func__, __LINE__); goto cleanup; } } while (0)
-
-#define cleanup_if_not(x) do { if (!(x)) { printf("%s %s:%d:\tcleanup_if_not failed: " #x "\n", __FILE__, __func__, __LINE__); goto cleanup; } } while (0)
-
 
 uint32_t readTag(BRPtrRangeRef r)
 {
