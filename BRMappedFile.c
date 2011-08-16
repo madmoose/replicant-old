@@ -7,6 +7,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include "platform/win32/BRWinCommon.h"
 #else
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -41,7 +42,11 @@ BRMappedFileRef BRMappedFileMapFile(const char *aFilename)
 
 	mappedFile->hFile = CreateFile(aFilename, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, 0);
 	if (mappedFile->hFile == INVALID_HANDLE_VALUE)
+	{
+		// TODO: Print error message but don't exit
+		ErrorExit("BRMappedFileMapFile");
 		goto cleanup;
+	}
 
 	mappedFile->dwFileSize = GetFileSize(mappedFile->hFile, NULL);
 
