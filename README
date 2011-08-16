@@ -2,16 +2,14 @@ Replicant is an in-progress video decoder for the high color VQA video
 files from the 1997 Blade Runner PC game from Westwood Studios.
 
 It's written in c99, because, well, I thought it'd be fun to not do
-it in c++.
+it in c++. The object pattern is half-assedly based on Apple's
+CoreFoundation.
 
 Currently you just give the program a .MIX from Blade Runner and it'll
 dump every frame of every VQA to a png, courtesy of the smashing
 LodePNG library from http://lodev.org/lodepng/
 
 All the fun stuff is happening in BRVQAReader.c.
-
-There's an 8-bit VQA-file in Blade Runner. That format is well
-documented and will be supported soon.
 
 Once the video decoding is flawless and it's been wrapped in a
 "proper" video player with sound support, I'll probably start digging
