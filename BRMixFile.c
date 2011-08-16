@@ -50,8 +50,8 @@ BRMixFileRef BRMixFileOpen(const char *aFilename)
 	mixFile->_entryCount = BRPtrRangeReadLE16AndAdvance(r);
 	mixFile->_size       = BRPtrRangeReadLE32AndAdvance(r);
 
-	printf("entryCount: %u\n", mixFile->_entryCount);
-	printf("size:       %u\n", mixFile->_size);
+	//printf("entryCount: %u\n", mixFile->_entryCount);
+	//printf("size:       %u\n", mixFile->_size);
 
 	// TODO: Verify size against map size
 	if (mixFile->_size > BRMappedFileGetSize(mixFile->_mappedFile))
@@ -125,7 +125,7 @@ BRPtrRangeRef BRMixFileGetResourceRangeByIndex(BRMixFileRef aMixFile, uint16_t a
 	if (!aMixFile || aIndex >= aMixFile->_entryCount)
 		return 0;
 
-	printf("ID: 0x%08x\n", aMixFile->_entries[aIndex].id);
+	//printf("ID: 0x%08x\n", aMixFile->_entries[aIndex].id);
 
 	uint8_t *p  = _BRMixFileGetResourceDataByIndex(aMixFile, aIndex);
 	size_t size = _BRMixFileGetResourceSizeByIndex(aMixFile, aIndex);
