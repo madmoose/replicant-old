@@ -5,18 +5,9 @@ It's written in c99, because, well, I thought it'd be fun to not do
 it in c++. The object pattern is half-assedly based on Apple's
 CoreFoundation.
 
-Currently you just give the program a .MIX from Blade Runner and it'll
-dump every frame of every VQA to a png, courtesy of the smashing
-LodePNG library from http://lodev.org/lodepng/
-
-All the fun stuff is happening in BRVQAReader.c.
-
-Once the video decoding is flawless and it's been wrapped in a
-"proper" video player with sound support, I'll probably start digging
-into the other chunks from the game.
-
 I've compiled it with clang on Mac OS X and TinyCC on Windows.
 Visual Studio doesn't support C99 - complain to Microsoft.
+Just compile togeter all the .c files that you can find.
 
 DrMcCoy thought up the name. Thanks Doc!
 
