@@ -12,6 +12,10 @@ void BRRetain(void *p)
 
 void BRRelease(void *p)
 {
+	// Like free, BRRelease can be called on null
+	if (!p)
+		return;
+
 	BRRetainable *n = (BRRetainable*)p;
 
 	if (n->retainCount == 0)
