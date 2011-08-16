@@ -49,3 +49,13 @@ BOOL BRSizeIsEmpty(BRSize s)
 {
 	return s.width == 0 && s.height == 0;
 }
+
+uint32_t roundUpToPowerOfTwo(uint32_t x) {
+	x = x - 1;
+	x = x | (x >> 1);
+	x = x | (x >> 2);
+	x = x | (x >> 4);
+	x = x | (x >> 8);
+	x = x | (x >>16);
+	return x + 1;
+}
