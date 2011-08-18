@@ -137,3 +137,11 @@ void _BRAudioSinkSDLCallback(void *aAudioSink, uint8_t *stream, int requestLengt
 			BRQueueDequeue(audioSink->audioQueue);
 	}
 }
+
+int BRAudioSinkGetSamplesInQueue(BRAudioSinkRef aAudioSink)
+{
+	SDL_LockAudio();
+	int dataInQueue = aAudioSink->inAudioQueue;
+	SDL_UnlockAudio();
+	return dataInQueue / 2;
+}

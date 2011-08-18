@@ -13,4 +13,6 @@ void BRAudioSinkStop(BRAudioSinkRef aAudioSink);
 
 BOOL BRAudioSinkEnqueueAudio(BRAudioSinkRef aAudioSink, BRDataRef data);
 
+int BRAudioSinkGetSamplesInQueue(BRAudioSinkRef aAudioSink);
+
 #endif
