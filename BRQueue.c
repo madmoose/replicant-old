@@ -10,6 +10,7 @@ struct BRQueue
 	struct BRQueuedItem *head;
 	struct BRQueuedItem *tail;
 	struct BRQueuedItem *freeListHead;
+	size_t queueLength;
 };
 
 struct BRQueuedItem
@@ -50,6 +51,8 @@ void BRQueueEnqueue(BRQueueRef aQueue, void *aRetainable)
 		aQueue->tail->next = qi;
 		aQueue->tail = qi;
 	}
+
+	++aQueue->queueLength;
 }
 
 void *BRQueueGetHead(BRQueueRef aQueue)
@@ -71,4 +74,11 @@ void BRQueueDequeue(BRQueueRef aQueue)
 	aQueue->head = front->next;
 	front->next = aQueue->freeListHead;
 	aQueue->freeListHead = front;
+
+	--aQueue->queueLength;
+}
+
+size_t BRQueueGetLength(BRQueueRef aQueue)
+{
+	return aQueue->queueLength;
 }
