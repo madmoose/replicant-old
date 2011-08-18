@@ -155,7 +155,7 @@ BOOL _BRControllerHasFrame(BRControllerRef aController)
 	exit(1);
 }
 
-BOOL BRControllerGetAVFrame(BRControllerRef aController, BRAVFrame *aFrame)
+BOOL BRControllerGetAVFrame(BRControllerRef aController, BRAVFrameRef *aFrame)
 {
 	assert(aFrame);
 	BOOL hasFrame = _BRControllerHasFrame(aController);

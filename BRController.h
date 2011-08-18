@@ -2,7 +2,7 @@
 #define BR_CONTROLLER_H
 
 #include "BREngine.h"
-#include "BRFrame.h"
+#include "BRAVFrame.h"
 
 typedef struct BRController * BRControllerRef;
 
@@ -11,7 +11,7 @@ BRControllerRef BRControllerCreateVQAPlayer(BREngineRef aEngine, const char *aVQ
 BRControllerRef BRControllerSequenceCreate(BREngineRef aEngine);
 BOOL BRControllerSequenceAddController(BRControllerRef aSequence, BRControllerRef aController);
 
-BOOL BRControllerGetAVFrame(BRControllerRef aController, BRAVFrame *aFrame);
+BOOL BRControllerGetAVFrame(BRControllerRef aController, BRAVFrameRef *aFrame);
 
 void BRControllerVQAPlayerSetLeadInLoop(BRControllerRef aController, int aLeadInLoop);
 void BRControllerVQAPlayerSetMainLoop(BRControllerRef aController, int aMainLoop);

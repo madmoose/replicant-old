@@ -3,32 +3,51 @@
 #include "BRAudioSink.h"
 #include "BREngine.h"
 #include "BROpenGLRenderer.h"
+#include "BRQueue.h"
 #include "BRRetain.h"
 #include "BRWindow.h"
 
 #include <assert.h>
 #include <stdio.h>
 
-BOOL handleInput();
+void handleInput();
 int64_t queryPerformanceFrequency();
 int64_t queryPerformanceCounter();
 
+void runLoop();
+
+BREngineRef engine;
+BRAudioSinkRef audioSink;
+BRWindowRef window;
+BROpenGLRendererRef renderer;
+
 int main()
 {
-	BREngineRef engine = BREngineCreate();
+	engine = BREngineCreate();
 	assert(engine);
 
-	BRAudioSinkRef audioSink = BRAudioSinkCreate();
+	audioSink = BRAudioSinkCreate();
 	assert(audioSink);
 
-	BRWindowRef window = BRWindowCreate();
+	window = BRWindowCreate();
 	assert(window);
 
-	BROpenGLRendererRef renderer = BROpenGLRendererCreate(window, engine);
-	assert(renderer);
-
 	//_BROpenGLRendererGetInfo(renderer);
+	DWORD WINAPI runLoopTheadProc(LPVOID lpParameter);
+	HANDLE runLoopThread = CreateThread(0, 0, runLoopTheadProc, 0, 0, 0);
 
+	handleInput();
+}
+
+DWORD WINAPI runLoopTheadProc(LPVOID lpParameter)
+{
+	runLoop();
+}
+
+void runLoop()
+{
+	renderer = BROpenGLRendererCreate(window, engine);
+	assert(renderer);
 
 	int64_t frequency = queryPerformanceFrequency();
 	int64_t ticksPerFrame = frequency / 15;
@@ -36,74 +55,62 @@ int main()
 	int64_t lastFrameTime = queryPerformanceCounter() - ticksPerFrame;
 
 	int64_t currentTime;
-
 	int64_t frameDeltaTicks = 0;
 
-	BRAVFrame avFrame;
-	avFrame.audio.data = 0;
-	avFrame.video.data = 0;
+	BOOL audioStarted = NO;
 
-	BRAudioSinkStart(audioSink);
-	while (handleInput())
+	BRQueueRef videoFrameQueue = BRQueueCreate();
+
+	for (;;)
 	{
-		currentTime = queryPerformanceCounter();
+		int samplesInQueue = BRAudioSinkGetSamplesInQueue(audioSink);
 
-		frameDeltaTicks += currentTime - lastFrameTime;
-		lastFrameTime = currentTime;
-
-		if (frameDeltaTicks > ticksPerFrame)
+		// Make sure we more than one frame queued
+		if (samplesInQueue <= 1470)
 		{
-			if (frameDeltaTicks / ticksPerFrame > 1)
-				puts("Catching up!");
-
-			while (frameDeltaTicks > ticksPerFrame)
+			while (samplesInQueue <= 1470)
 			{
-				frameDeltaTicks -= ticksPerFrame;
+				BRAVFrameRef avFrame = BREngineGetFrame(engine);
+				assert(avFrame);
 
-				if (avFrame.video.data)
+				BRAudioFrameRef audioFrame = BRAVFrameGetAudioFrame(avFrame);
+				assert(BRAudioFrameGetData(audioFrame));
+				assert(BRDataGetBytes(BRAudioFrameGetData(audioFrame)));
+
+				BRAudioSinkEnqueueAudio(audioSink, BRAudioFrameGetData(audioFrame));
+
+				BRVideoFrameRef videoFrame = BRAVFrameGetVideoFrame(avFrame);
+				assert(videoFrame);
+				BRQueueEnqueue(videoFrameQueue, videoFrame);
+
+				if (!audioStarted)
 				{
-					BRRelease(avFrame.video.data);
-					avFrame.video.data = 0;
+					audioStarted = YES;
+					BRAudioSinkStart(audioSink);
 				}
 
-				avFrame = BREngineGetFrame(engine);
+				BRRelease(avFrame);
 
-				if (!avFrame.audio.data)
-				{
-					BRAudioSinkStop(audioSink);
-					puts("NO Audio frame!");
-				}
-				else
-					BRAudioSinkEnqueueAudio(audioSink, avFrame.audio.data);
-				avFrame.audio.data = 0;
+				samplesInQueue = BRAudioSinkGetSamplesInQueue(audioSink);
 			}
 
-			BROpenGLRendererRenderFrame(renderer, avFrame.video);
-
-			BRRelease(avFrame.video.data);
-			avFrame.video.data = 0;
+			BRVideoFrameRef videoFrame = BRQueueGetHead(videoFrameQueue);
+			BROpenGLRendererRenderFrame(renderer, videoFrame);
+			BRQueueDequeue(videoFrameQueue);
 		}
 		Sleep(10);
 	}
 }
 
-BOOL handleInput()
+void handleInput()
 {
 	MSG msg;
 	BOOL quit = FALSE;
-	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	while (GetMessage(&msg, NULL, 0, 0))
 	{
-		if (msg.message == WM_QUIT)
-		{
-			quit = TRUE;
-			break;
-		}
-
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-
-	return !quit;
 }
 
 int64_t queryPerformanceFrequency()

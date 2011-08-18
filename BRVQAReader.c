@@ -974,7 +974,8 @@ BOOL _BRVQAReaderReadSND2(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 	if (!aVQAReader->audioFrame || BRDataGetSize(aVQAReader->audioFrame) != 4 * size)
 	{
 		//printf("New audio frame size: %d\n", 4 * size);
-		BRRelease(aVQAReader->audioFrame);
+		if (aVQAReader->audioFrame)
+			BRRelease(aVQAReader->audioFrame);
 		aVQAReader->audioFrame = BRDataCreate(4 * size);
 		assert(aVQAReader->audioFrame);
 	}
@@ -1001,7 +1002,7 @@ BOOL _BRVQAReaderReadSND2(BRVQAReaderRef aVQAReader, BRPtrRangeRef r)
 			int diff = ima_step_table[(step_index << 3) | code];
 
 			// Westwood's IMA ADPCM differs from the below "standard" implementation
-			// in the LSB is a couple of places.
+			// in the LSB in a couple of places.
 			//int diff = ima_step_table_std[step_index] * code / 4 + ima_step_table_std[step_index] / 8;
 
 			if (sign)
@@ -1103,29 +1104,40 @@ cleanup:
 	return NO;
 }
 
-BRAVFrame BRVQAReaderGetAVFrame(BRVQAReaderRef aVQAReader)
+BRAVFrameRef BRVQAReaderGetAVFrame(BRVQAReaderRef aVQAReader)
 {
-	BRAVFrame frame;
+	// Audio Frame
+	BRAudioFrameRef audioFrame = 0;
 
-	frame.video.size = BRSizeMake(aVQAReader->_header.width,
+	if (aVQAReader->audioFrame && BRDataGetSize(aVQAReader->audioFrame))
+	{
+		BRDataRef audioData  = BRDataCreateWithData(aVQAReader->audioFrame);
+		uint32_t sampleCount = BRDataGetSize(audioData) / 2;
+
+		audioFrame = BRAudioFrameCreate(sampleCount, audioData);
+		BRRelease(audioData);
+	}
+
+	// Video Frame
+	BRSize videoSize = BRSizeMake(aVQAReader->_header.width,
 	                              aVQAReader->_header.height);
 
-	frame.video.stride = BRSizeMake(aVQAReader->_frameStride,
+	BRSize videoStride = BRSizeMake(aVQAReader->_frameStride,
 	                                aVQAReader->_frameStride);
 
-	frame.video.data = BRDataCreateWithBytes(
+	BRDataRef videoData = BRDataCreateWithBytes(
 		4 * aVQAReader->_frameStride * aVQAReader->_frameStride,
 		aVQAReader->_frame);
 
-	frame.audio.data = 0;
-	frame.audio.samples = 0;
-	if (aVQAReader->audioFrame && BRDataGetSize(aVQAReader->audioFrame))
-	{
-		frame.audio.data    = BRDataCreateWithData(aVQAReader->audioFrame);
-		frame.audio.samples = BRDataGetSize(frame.audio.data) / 2;
-	}
+	BRVideoFrameRef videoFrame = BRVideoFrameCreate(videoSize, videoStride, videoData);
+	BRRelease(videoData);
 
-	return frame;
+	// AV Frame
+	BRAVFrameRef avFrame = BRAVFrameCreate(audioFrame, videoFrame);
+	BRRelease(audioFrame);
+	BRRelease(videoFrame);
+
+	return avFrame;
 }
 
 BRVQAReaderRef BRVQAReaderOpen(BRPtrRangeRef r)

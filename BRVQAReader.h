@@ -1,8 +1,8 @@
-#ifndef VQA_HC_H
-#define VQA_HC_H
+#ifndef BR_VQA_READER_H
+#define BR_VQA_READER_H
 
 #include "BRCommon.h"
-#include "BRFrame.h"
+#include "BRAVFrame.h"
 #include "BRPtrRange.h"
 #include "BRUtils.h"
 
@@ -16,7 +16,7 @@ uint16_t BRVQAReaderGetFrameCount(BRVQAReaderRef aVQAReaderRef);
 
 BOOL BRVQAReaderReadFrame(BRVQAReaderRef aVQAReader, unsigned int aFrameNumber);
 
-BRAVFrame BRVQAReaderGetAVFrame(BRVQAReaderRef aVQAReader);
+BRAVFrameRef BRVQAReaderGetAVFrame(BRVQAReaderRef aVQAReader);
 
 BOOL BRVQAReaderGetLoop(BRVQAReaderRef aVQAReader, int aLoop, int *aFrameBegin, int *aFrameEnd);
 

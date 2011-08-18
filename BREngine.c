@@ -181,12 +181,12 @@ BOOL _BREngineInit(BREngineRef aEngine)
 	return YES;
 }
 
-BRAVFrame BREngineGetFrame(BREngineRef aEngine)
+BRAVFrameRef BREngineGetFrame(BREngineRef aEngine)
 {
 	if (!aEngine->isInitialized)
 		_BREngineInit(aEngine);
 
-	BRAVFrame avFrame;
+	BRAVFrameRef avFrame = 0;
 	BOOL hasFrame = BRControllerGetAVFrame(aEngine->controller, &avFrame);
 	if (!hasFrame)
 		exit(1);

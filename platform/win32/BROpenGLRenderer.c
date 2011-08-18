@@ -108,10 +108,15 @@ void _BROpenGLRendererGetInfo(BROpenGLRendererRef aRenderer)
 
 #include "BRRetain.h"
 
-void BROpenGLRendererRenderFrame(BROpenGLRendererRef aRenderer, BRVideoFrame frame)
+void BROpenGLRendererRenderFrame(BROpenGLRendererRef aRenderer, BRVideoFrameRef videoFrame)
 {
-	assert(frame.data);
-	assert(BRDataGetBytes(frame.data));
+	assert(videoFrame);
+	BRDataRef videoData = BRVideoFrameGetData(videoFrame);
+	assert(videoData);
+	assert(BRDataGetBytes(videoData));
+
+	BRSize frameStride = BRVideoFrameGetStride(videoFrame);
+	BRSize frameSize   = BRVideoFrameGetSize(videoFrame);
 
 	glBindTexture(GL_TEXTURE_2D, aRenderer->texture);
 	glError();
@@ -119,12 +124,12 @@ void BROpenGLRendererRenderFrame(BROpenGLRendererRef aRenderer, BRVideoFrame fra
 	glTexImage2D(GL_TEXTURE_2D,       // target
 	             0,                   // level
 	             4,                   // internalFormat
-	             frame.stride.width,  // width
-	             frame.stride.height, // height
+	             frameStride.width,   // width
+	             frameStride.height,  // height
 	             0,                   // border
 	             GL_RGBA,             // format
 	             GL_UNSIGNED_BYTE,    // type
-	             BRDataGetBytes(frame.data)); // data
+	             BRDataGetBytes(videoData)); // data
 	glError();
 
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -149,11 +154,11 @@ void BROpenGLRendererRenderFrame(BROpenGLRendererRef aRenderer, BRVideoFrame fra
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	float tx = (float)frame.size.width  / frame.stride.width;
-	float ty = (float)frame.size.height / frame.stride.height;
+	float tx = (float)frameSize.width  / frameStride.width;
+	float ty = (float)frameSize.height / frameStride.height;
 
-	float vw = (float)frame.size.width;
-	float wh = (float)frame.size.height;
+	float vw = (float)frameSize.width;
+	float wh = (float)frameSize.height;
 
 	glBegin(GL_QUADS);
 		glTexCoord2d( 0,  0);
