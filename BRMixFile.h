@@ -12,6 +12,8 @@ BRMixFileRef BRMixFileOpen(const char *aFilename);
 
 void BRMixFileClose(BRMixFileRef aMixFile);
 
+const char *BRMixFileGetName(BRMixFileRef aMixFile);
+
 uint16_t BRMixFileGetResourceCount(BRMixFileRef aMixFile);
 
 BRPtrRangeRef BRMixFileGetResourceRangeByIndex(BRMixFileRef aMixFile, uint16_t aIndex);

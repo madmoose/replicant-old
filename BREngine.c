@@ -119,12 +119,13 @@ BRPtrRangeRef BREngineGetResource(BREngineRef aEngine, const char *name)
 	{
 		if (aEngine->mixFiles[i] == 0)
 			break;
-		else
-		{
-			BRPtrRangeRef r = BRMixFileGetResourceRangeByName(aEngine->mixFiles[i], name);
-			if (r)
-				return r;
-		}
+
+		BRPtrRangeRef r = BRMixFileGetResourceRangeByName(aEngine->mixFiles[i], name);
+		if (!r)
+			continue;
+
+		printf("Resource '%s' found in MIX file '%s'\n", name, BRMixFileGetName(aEngine->mixFiles[i]));
+		return r;
 	}
 
 	printf("Resource '%s' not found.\n", name);

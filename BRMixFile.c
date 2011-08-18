@@ -12,6 +12,7 @@ typedef unsigned char byte;
 
 struct BRMixFile
 {
+	char *_filename;
 	BRMappedFileRef _mappedFile;
 
 	uint16_t _entryCount;
@@ -34,6 +35,8 @@ BRMixFileRef BRMixFileOpen(const char *aFilename)
 
 	if (!mixFile)
 		return 0;
+
+	mixFile->_filename = strdup(aFilename);
 
 	mixFile->_entries = 0;
 
@@ -92,6 +95,11 @@ void BRMixFileClose(BRMixFileRef aMixFile)
 	BRMappedFileUnmapFile(aMixFile->_mappedFile);
 	free(aMixFile->_entries);
 	free(aMixFile);
+}
+
+const char *BRMixFileGetName(BRMixFileRef aMixFile)
+{
+	return aMixFile->_filename;
 }
 
 uint16_t BRMixFileGetResourceCount(BRMixFileRef aMixFile)
