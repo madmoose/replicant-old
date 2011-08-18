@@ -35,7 +35,7 @@ BRAudioFrameRef BRAudioFrameCreate(uint32_t aSampleCount, BRDataRef aData)
 	BRAudioFrameRef audioFrame = calloc(1, sizeof(struct BRAudioFrame));
 	if (!audioFrame) return 0;
 	//printf("BRAudioFrameCreate: %p\n", audioFrame);
-	BRRetainableSetDeallocFunc(audioFrame, BRAudioFrameDealloc);
+	BRRetainableSetDeallocFunc(audioFrame, (BRRetainableDeallocFuncRef)BRAudioFrameDealloc);
 
 	audioFrame->sampleCount = aSampleCount;
 	audioFrame->data        = BRRetain(aData);
@@ -65,7 +65,7 @@ BRVideoFrameRef BRVideoFrameCreate(BRSize aSize, BRSize aStride, BRDataRef aData
 	BRVideoFrameRef videoFrame = calloc(1, sizeof(struct BRVideoFrame));
 	if (!videoFrame) return 0;
 	//printf("BRVideoFrameCreate: %p\n", videoFrame);
-	BRRetainableSetDeallocFunc(videoFrame, BRVideoFrameDealloc);
+	BRRetainableSetDeallocFunc(videoFrame, (BRRetainableDeallocFuncRef)BRVideoFrameDealloc);
 
 	videoFrame->size   = aSize;
 	videoFrame->stride = aStride;
@@ -101,7 +101,7 @@ BRAVFrameRef BRAVFrameCreate(BRAudioFrameRef aAudioFrame, BRVideoFrameRef aVideo
 	BRAVFrameRef avFrame = calloc(1, sizeof(struct BRAVFrame));
 	if (!avFrame) return 0;
 	//printf("BRAVFrameCreate: %p\n", avFrame);
-	BRRetainableSetDeallocFunc(avFrame, BRAVFrameDealloc);
+	BRRetainableSetDeallocFunc(avFrame, (BRRetainableDeallocFuncRef)BRAVFrameDealloc);
 
 	if (aAudioFrame)
 		avFrame->audioFrame = BRRetain(aAudioFrame);

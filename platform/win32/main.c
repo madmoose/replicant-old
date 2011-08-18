@@ -35,27 +35,24 @@ int main()
 	//_BROpenGLRendererGetInfo(renderer);
 	DWORD WINAPI runLoopTheadProc(LPVOID lpParameter);
 	HANDLE runLoopThread = CreateThread(0, 0, runLoopTheadProc, 0, 0, 0);
+	(void)runLoopThread;
 
 	handleInput();
+
+	return 0;
 }
 
 DWORD WINAPI runLoopTheadProc(LPVOID lpParameter)
 {
 	runLoop();
+
+	return 0;
 }
 
 void runLoop()
 {
 	renderer = BROpenGLRendererCreate(window, engine);
 	assert(renderer);
-
-	int64_t frequency = queryPerformanceFrequency();
-	int64_t ticksPerFrame = frequency / 15;
-
-	int64_t lastFrameTime = queryPerformanceCounter() - ticksPerFrame;
-
-	int64_t currentTime;
-	int64_t frameDeltaTicks = 0;
 
 	BOOL audioStarted = NO;
 
@@ -68,36 +65,37 @@ void runLoop()
 		// Make sure we more than one frame queued
 		if (samplesInQueue <= 1470)
 		{
-			while (samplesInQueue <= 1470)
-			{
-				BRAVFrameRef avFrame = BREngineGetFrame(engine);
-				assert(avFrame);
+			BRAVFrameRef avFrame = BREngineGetFrame(engine);
+			assert(avFrame);
 
-				BRAudioFrameRef audioFrame = BRAVFrameGetAudioFrame(avFrame);
-				assert(BRAudioFrameGetData(audioFrame));
-				assert(BRDataGetBytes(BRAudioFrameGetData(audioFrame)));
+			BRAudioFrameRef audioFrame = BRAVFrameGetAudioFrame(avFrame);
+			assert(BRAudioFrameGetData(audioFrame));
+			assert(BRDataGetBytes(BRAudioFrameGetData(audioFrame)));
 
-				BRAudioSinkEnqueueAudio(audioSink, BRAudioFrameGetData(audioFrame));
+			BRAudioSinkEnqueueAudio(audioSink, BRAudioFrameGetData(audioFrame));
 
-				BRVideoFrameRef videoFrame = BRAVFrameGetVideoFrame(avFrame);
-				assert(videoFrame);
-				BRQueueEnqueue(videoFrameQueue, videoFrame);
+			BRVideoFrameRef videoFrame = BRAVFrameGetVideoFrame(avFrame);
+			assert(videoFrame);
+			BRQueueEnqueue(videoFrameQueue, videoFrame);
 
-				if (!audioStarted)
-				{
-					audioStarted = YES;
-					BRAudioSinkStart(audioSink);
-				}
+			BRRelease(avFrame);
 
-				BRRelease(avFrame);
+			samplesInQueue = BRAudioSinkGetSamplesInQueue(audioSink);
 
-				samplesInQueue = BRAudioSinkGetSamplesInQueue(audioSink);
-			}
+		}
 
+		if (BRQueueGetLength(videoFrameQueue) > 0)
+		{
 			BRVideoFrameRef videoFrame = BRQueueGetHead(videoFrameQueue);
 			BROpenGLRendererRenderFrame(renderer, videoFrame);
 			BRQueueDequeue(videoFrameQueue);
+			if (!audioStarted)
+			{
+				audioStarted = YES;
+				BRAudioSinkStart(audioSink);
+			}
 		}
+
 		Sleep(10);
 	}
 }
@@ -105,7 +103,7 @@ void runLoop()
 void handleInput()
 {
 	MSG msg;
-	BOOL quit = FALSE;
+
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);

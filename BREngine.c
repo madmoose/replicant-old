@@ -76,8 +76,6 @@ BOOL _BREngineSetDataPath(BREngineRef aEngine, const char *aPath)
 {
 	BOOL rc = YES;
 #ifdef _WIN32
-	char path[MAX_PATH];
-
 	struct stat s;
 	if (access(aPath, 0) == 0 && stat(aPath, &s) == 0)
 		rc = s.st_mode & S_IFDIR;

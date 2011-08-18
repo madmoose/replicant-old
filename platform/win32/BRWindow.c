@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "BRWindow.h"
+#include "BRWinCommon.h"
 
 #include "BRCommon.h"
 
@@ -12,7 +13,6 @@ struct BRWindow
 	HWND hWnd;
 };
 
-void ErrorExit(LPTSTR lpszFunction);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 BRWindowRef BRWindowCreate()
@@ -23,8 +23,6 @@ BRWindowRef BRWindowCreate()
 		return 0;
 
 	WNDCLASS wc;
-	HDC hDC;
-	HGLRC hRC;
 
 	wc.style = CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
@@ -78,28 +76,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-}
-
-void ErrorExit(LPTSTR lpszFunction)
-{
-	// Retrieve the system error message for the last-error code
-
-	LPVOID lpMsgBuf;
-	LPVOID lpDisplayBuf;
-	DWORD dw = GetLastError();
-
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		dw,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR) &lpMsgBuf,
-		0, NULL);
-
-	// Display the error message and exit the process
-	printf("Error in %s: %s\n", lpszFunction, lpMsgBuf);
-
-	ExitProcess(dw);
 }

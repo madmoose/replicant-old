@@ -80,10 +80,10 @@ BOOL BRAudioSinkEnqueueAudio(BRAudioSinkRef aAudioSink, BRDataRef aAudioData)
 
 	SDL_LockAudio();
 	aAudioSink->inAudioQueue += BRDataGetSize(aAudioData);
-	BOOL rc = BRQueueEnqueue(aAudioSink->audioQueue, aAudioData);
+	BRQueueEnqueue(aAudioSink->audioQueue, aAudioData);
 	SDL_UnlockAudio();
 
-	return rc;
+	return YES;
 }
 
 void _BRAudioSinkSDLCallback(void *aAudioSink, uint8_t *stream, int requestLength)
@@ -101,7 +101,7 @@ void _BRAudioSinkSDLCallback(void *aAudioSink, uint8_t *stream, int requestLengt
 		int grab = MIN(requestLength, audioSink->headRemainder);
 
 		memcpy(stream,
-		       BRDataGetBytes(head) + (BRDataGetSize(head) - audioSink->headRemainder),
+		       BRDataGetBytes(head) + (headSize - audioSink->headRemainder),
 		       grab);
 
 		stream += grab;

@@ -78,16 +78,16 @@ void _BROpenGLRendererGetInfo(BROpenGLRendererRef aRenderer)
 {
 	const char *vendor, *renderer, *version, *extensions;
 
-	vendor = glGetString(GL_VENDOR);
+	vendor = (const char*)glGetString(GL_VENDOR);
 	if (!vendor) vendor = "Unknown";
 
-	renderer = glGetString(GL_RENDERER);
+	renderer = (const char*)glGetString(GL_RENDERER);
 	if (!renderer) renderer = "Unknown";
 
-	version = glGetString(GL_VERSION);
+	version = (const char*)glGetString(GL_VERSION);
 	if (!version) version = "Unknown";
 
-	extensions = glGetString(GL_EXTENSIONS);
+	extensions = (const char*)glGetString(GL_EXTENSIONS);
 	if (!extensions) extensions = "Unknown";
 
 	printf("Vendor:     %s\n", vendor);

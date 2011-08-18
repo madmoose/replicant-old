@@ -13,7 +13,7 @@ void hexdump(void *data, size_t size)
 	end = p + size;
 
 	do {
-		printf("%08lx: ", (uintptr_t)(p - (unsigned char*)data));
+		printf("%08x: ", (uintptr_t)(p - (unsigned char*)data));
 		for (c = 0; c != 16 && p + c != end; ++c)
 		{
 			if (c == 8)

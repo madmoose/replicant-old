@@ -7,7 +7,6 @@ void ErrorExit(LPTSTR lpszFunction)
 	// Retrieve the system error message for the last-error code
 
 	LPVOID lpMsgBuf;
-	LPVOID lpDisplayBuf;
 	DWORD dw = GetLastError();
 
 	FormatMessage(
@@ -17,11 +16,11 @@ void ErrorExit(LPTSTR lpszFunction)
 		NULL,
 		dw,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR) &lpMsgBuf,
+		(LPTSTR)&lpMsgBuf,
 		0, NULL);
 
 	// Display the error message and exit the process
-	printf("Error in %s: %s\n", lpszFunction, lpMsgBuf);
+	printf("Error in %s: %s\n", lpszFunction, (char*)lpMsgBuf);
 
 	ExitProcess(dw);
 }

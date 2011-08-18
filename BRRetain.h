@@ -1,9 +1,11 @@
 #ifndef BR_RETAIN_H
 #define BR_RETAIN_H
 
-typedef void (*BRRetainableDeallocFuncRef)(BRRetainableRef);
+typedef struct BRRetainable_s * BRRetainableRef;
 
-typedef struct
+typedef void (*BRRetainableDeallocFuncRef)(void *a);
+
+typedef struct BRRetainable_s
 {
 	unsigned int retainCount;
 	BRRetainableDeallocFuncRef deallocFunc;

@@ -39,11 +39,11 @@ struct BRController
 	};
 
 	BREngineRef engine;
+};
 
-	struct _BRControllerSequenceItem {
-		BRControllerRef controller;
-		struct _BRControllerSequenceItem *next;
-	};
+struct _BRControllerSequenceItem {
+	BRControllerRef controller;
+	struct _BRControllerSequenceItem *next;
 };
 
 BRControllerRef BRControllerCreateVQAPlayer(BREngineRef aEngine, const char *aVQAName)
