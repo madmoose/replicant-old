@@ -1,5 +1,5 @@
-#ifndef BR_PTR_RANGE
-#define BR_PTR_RANGE
+#ifndef BR_PTR_RANGE_H
+#define BR_PTR_RANGE_H
 
 #include <stdint.h>
 #include <stddef.h>
