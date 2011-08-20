@@ -1,8 +1,9 @@
 #ifndef BR_ENGINE_H
 #define BR_ENGINE_H
 
+#include "BRCommon/BRCommon.h"
+
 #include "BRAVFrame.h"
-#include "BRPtrRange.h"
 
 #include <stdint.h>
 

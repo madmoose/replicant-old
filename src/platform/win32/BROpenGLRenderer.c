@@ -106,8 +106,6 @@ void _BROpenGLRendererGetInfo(BROpenGLRendererRef aRenderer)
 	putchar('\n');
 }
 
-#include "BRRetain.h"
-
 void BROpenGLRendererRenderFrame(BROpenGLRendererRef aRenderer, BRVideoFrameRef videoFrame)
 {
 	assert(videoFrame);

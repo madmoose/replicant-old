@@ -3,7 +3,7 @@
 #include "BRWindow.h"
 #include "BRWinCommon.h"
 
-#include "BRCommon.h"
+#include "BRCommon/BRCommon.h"
 
 #include <stdlib.h>
 #include <stdio.h>

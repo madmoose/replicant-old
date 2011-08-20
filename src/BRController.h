@@ -1,6 +1,8 @@
 #ifndef BR_CONTROLLER_H
 #define BR_CONTROLLER_H
 
+#include "BRCommon/BRCommon.h"
+
 #include "BREngine.h"
 #include "BRAVFrame.h"
 

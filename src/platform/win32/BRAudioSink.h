@@ -1,8 +1,7 @@
 #ifndef BR_AUDIO_SINK_H
 #define BR_AUDIO_SINK_H
 
-#include "BRCommon.h"
-#include "BRData.h"
+#include "BRCommon/BRCommon.h"
 
 typedef struct BRAudioSink * BRAudioSinkRef;
 

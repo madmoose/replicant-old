@@ -1,10 +1,9 @@
 #ifndef BR_VQA_READER_H
 #define BR_VQA_READER_H
 
-#include "BRCommon.h"
+#include "BRCommon/BRCommon.h"
+
 #include "BRAVFrame.h"
-#include "BRPtrRange.h"
-#include "BRUtils.h"
 
 typedef struct BRVQAReader * BRVQAReaderRef;
 

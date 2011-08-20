@@ -14,4 +14,12 @@
 
 #define cleanup_if_not(x) do { if (!(x)) { printf("%s %s:%d:\tcleanup_if_not failed: " #x "\n", __FILE__, __func__, __LINE__); goto cleanup; } } while (0)
 
+#include "BRData.h"
+#include "BREndian.h"
+#include "BRMappedFile.h"
+#include "BRPtrRange.h"
+#include "BRQueue.h"
+#include "BRRetain.h"
+#include "BRUtils.h"
+
 #endif

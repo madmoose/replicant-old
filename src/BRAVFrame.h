@@ -1,8 +1,7 @@
 #ifndef BR_AV_FRAME_H
 #define BR_AV_FRAME_H
 
-#include "BRData.h"
-#include "BRUtils.h"
+#include "BRCommon/BRCommon.h"
 
 #include <stdint.h>
 

@@ -1,9 +1,5 @@
 #include "BRVQAReader.h"
 
-#include "BRCommon.h"
-#include "BRRetain.h"
-#include "BRUtils.h"
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>

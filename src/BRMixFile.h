@@ -1,7 +1,7 @@
 #ifndef BR_MIXFILE_H
 #define BR_MIXFILE_H
 
-#include "BRPtrRange.h"
+#include "BRCommon/BRCommon.h"
 
 #include <stddef.h>
 #include <stdint.h>
