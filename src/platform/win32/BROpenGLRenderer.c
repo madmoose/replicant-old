@@ -138,7 +138,7 @@ void BROpenGLRendererRenderFrame(BROpenGLRendererRef aRenderer, BRVideoFrameRef 
 
 
 
-	glViewport(0, 0, 320, 240);
+	glViewport(0, 0, 640, 480);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, 640, 480, 0, -1, 1);

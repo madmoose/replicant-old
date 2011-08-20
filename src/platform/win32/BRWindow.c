@@ -41,7 +41,7 @@ BRWindowRef BRWindowCreate()
 	window->hWnd = CreateWindow(
 		"ReplicantWindow", "Replicant",
 		WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE,
-		0, 0, 320, 240,
+		0, 0, 640, 480,
 		NULL, NULL, wc.hInstance, NULL);
 	if (!window->hWnd)
 		ErrorExit("CreateWindow");
